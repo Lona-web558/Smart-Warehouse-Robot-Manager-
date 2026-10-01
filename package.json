@@ -1,0 +1,17 @@
+{
+  "name": "smart-warehouse-robot-manager",
+  "version": "1.0.0",
+  "description": "Smart Warehouse Robot Manager built with HTML5, CSS3, Bootstrap, JavaScript, Node.js and Express.js",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "cheerio": "^1.1.2",
+    "express": "^5.1.0"
+  }
+}

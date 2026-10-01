@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Smart Warehouse Robot Manager">
+  <title>Smart Warehouse Robot Manager</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold" href="#"><i class="bi bi-robot me-2"></i>SmartWarehouse</a>
+    <span class="navbar-text small d-none d-md-inline">Robot Operations Center</span>
+    <div class="ms-auto d-flex align-items-center gap-2">
+      <span class="live-dot"></span><span class="text-white-50 small">Live simulation</span>
+      <button class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#taskModal">
+        <i class="bi bi-plus-lg"></i> New Task
+      </button>
+    </div>
+  </div>
+</nav>
+
+<main class="container-fluid py-4">
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-xl-3"><div class="metric-card"><span>Total Robots</span><strong id="totalRobots">0</strong><i class="bi bi-robot"></i></div></div>
+    <div class="col-6 col-xl-3"><div class="metric-card"><span>Active Robots</span><strong id="activeRobots">0</strong><i class="bi bi-activity"></i></div></div>
+    <div class="col-6 col-xl-3"><div class="metric-card"><span>Queued Tasks</span><strong id="queuedTasks">0</strong><i class="bi bi-list-task"></i></div></div>
+    <div class="col-6 col-xl-3"><div class="metric-card"><span>Low Stock Items</span><strong id="lowStock">0</strong><i class="bi bi-box-seam"></i></div></div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-xl-8">
+      <section class="card dashboard-card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Warehouse Map</h5>
+          <div class="small text-muted"><span class="legend working"></span> Working <span class="legend idle"></span> Idle <span class="legend charging"></span> Charging</div>
+        </div>
+        <div class="card-body">
+          <div id="warehouseMap" class="warehouse-map">
+            <div class="zone zone-a">A</div><div class="zone zone-b">B</div>
+            <div class="zone zone-c">C</div><div class="zone zone-d">D</div>
+            <div class="station station-1"><i class="bi bi-lightning-charge"></i></div>
+            <div class="station station-2"><i class="bi bi-wrench-adjustable"></i></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="col-xl-4">
+      <section class="card dashboard-card h-100">
+        <div class="card-header"><h5 class="mb-0">Activity Feed</h5></div>
+        <div class="card-body p-0"><div id="eventFeed" class="event-feed"></div></div>
+      </section>
+    </div>
+  </div>
+
+  <div class="row g-4 mt-1">
+    <div class="col-xl-7">
+      <section class="card dashboard-card">
+        <div class="card-header d-flex justify-content-between">
+          <h5 class="mb-0">Robot Fleet</h5>
+          <input id="robotSearch" class="form-control form-control-sm search-box" placeholder="Search robots...">
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>Robot</th><th>Status</th><th>Battery</th><th>Zone</th><th>Task</th><th>Actions</th></tr></thead>
+            <tbody id="robotTable"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div class="col-xl-5">
+      <section class="card dashboard-card">
+        <div class="card-header d-flex justify-content-between">
+          <h5 class="mb-0">Task Queue</h5>
+          <select id="taskFilter" class="form-select form-select-sm filter-box">
+            <option value="All">All</option><option value="Queued">Queued</option><option value="In Progress">In Progress</option><option value="Completed">Completed</option>
+          </select>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>ID</th><th>Type</th><th>Priority</th><th>Robot</th><th>Status</th><th></th></tr></thead>
+            <tbody id="taskTable"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="row g-4 mt-1">
+    <div class="col-xl-7">
+      <section class="card dashboard-card">
+        <div class="card-header"><h5 class="mb-0">Inventory & Reorder Monitor</h5></div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>SKU</th><th>Product</th><th>Stock</th><th>Reorder At</th><th>Location</th><th>Supplier</th></tr></thead>
+            <tbody id="inventoryTable"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div class="col-xl-5">
+      <section class="card dashboard-card">
+        <div class="card-header"><h5 class="mb-0"><i class="bi bi-globe2 me-2"></i>Supplier Web Scraper</h5></div>
+        <div class="card-body">
+          <p class="text-muted small">Fetch public HTML pages and extract the title, description, headings and links. Respect the target site's robots.txt and terms.</p>
+          <form id="scrapeForm" class="row g-2">
+            <div class="col-12"><input id="scrapeUrl" type="url" class="form-control" placeholder="https://example.com" required></div>
+            <div class="col-12"><button class="btn btn-primary w-100"><i class="bi bi-search me-1"></i>Scrape Page</button></div>
+          </form>
+          <div id="scrapeResult" class="scrape-result mt-3 d-none"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<div class="modal fade" id="taskModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form id="taskForm" class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Create Warehouse Task</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-6"><label class="form-label">Type</label><select id="taskType" class="form-select"><option>Pick</option><option>Transport</option><option>Restock</option><option>Move</option></select></div>
+          <div class="col-md-6"><label class="form-label">Priority</label><select id="priority" class="form-select"><option>Normal</option><option>High</option><option>Low</option></select></div>
+          <div class="col-md-8"><label class="form-label">SKU / Item</label><input id="item" class="form-control" required placeholder="SKU-1234"></div>
+          <div class="col-md-4"><label class="form-label">Quantity</label><input id="quantity" type="number" min="1" class="form-control" required value="1"></div>
+          <div class="col-12"><label class="form-label">Warehouse Location</label><input id="location" class="form-control" required placeholder="A-05"></div>
+        </div>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary">Create Task</button></div>
+    </form>
+  </div>
+</div>
+
+<div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
